@@ -1026,6 +1026,13 @@ namespace Breeze
             case CE_ToolBoxTabLabel: fcn = &Style::drawToolBoxTabLabelControl; break;
             case CE_ToolBoxTabShape: fcn = &Style::drawToolBoxTabShapeControl; break;
             case CE_DockWidgetTitle: fcn = &Style::drawDockWidgetTitleControl; break;
+            case CE_ItemViewItem: {
+                auto opt = qstyleoption_cast<QStyleOptionViewItem*>(const_cast<QStyleOption*>(option));
+
+                opt->palette.setColor(QPalette::HighlightedText, opt->palette.color(QPalette::Text));
+
+                break;
+            }
 
             // fallback
             default: break;
@@ -3848,6 +3855,9 @@ namespace Breeze
 
         // try cast widget
         const auto abstractItemView = qobject_cast<const QAbstractItemView *>( widget );
+        QItemSelectionModel* selModel = nullptr;
+        if (abstractItemView)
+            selModel = abstractItemView->selectionModel();
 
         // store palette and rect
         const auto& palette( option->palette );
@@ -3906,12 +3916,11 @@ namespace Breeze
         // change color to implement mouse over
         if( mouseOver && !hasCustomBackground )
         {
-            if( !selected ) color.setAlphaF( 0.2 );
-            else color = color.lighter( 110 );
+            color = color.lighter( 110 );
         }
 
         // render
-        _helper->renderSelection( painter, rect, color );
+        _helper->renderSelection( painter, rect, color, viewItemOption->viewItemPosition, viewItemOption->index, selModel );
 
         return true;
     }
